@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Student Mark</title>
+</head>
+<body>
+    <h2>Are you sure you want to delete this record?</h2>
+    <p>Student: {{ studentmark.student.name }}</p>
+    <p>Tamil: {{ studentmark.tamil }}</p>
+    <p>English: {{ studentmark.english }}</p>
+    <p>Maths: {{ studentmark.maths }}</p>
+    <p>Science: {{ studentmark.science }}</p>
+    <p>Social Studies: {{ studentmark.social_studies }}</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Yes, delete</button>
+    </form>
+    <a href="{% url 'studentmarks' %}">Cancel</a>
+</body>
+</html>

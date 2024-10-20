@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Student Marks</title>
+</head>
+<body>
+    <h2>Edit Student Marks for {{ studentmark.student.name }}</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="tamil">Tamil:</label>
+        <input type="text" name="tamil" id="tamil" value="{{ studentmark.tamil }}">
+
+        <label for="english">English:</label>
+        <input type="text" name="english" id="english" value="{{ studentmark.english }}">
+
+        <label for="maths">Maths:</label>
+        <input type="text" name="maths" id="maths" value="{{ studentmark.maths }}">
+
+        <label for="science">Science:</label>
+        <input type="text" name="science" id="science" value="{{ studentmark.science }}">
+
+        <label for="social_studies">Social Studies:</label>
+        <input type="text" name="social_studies" id="social_studies" value="{{ studentmark.social_studies }}">
+
+        <label for="photo">Photo:</label>
+        <input type="file" name="photo" id="photo">
+        {% if studentmark.photo %}
+        <p>Current Photo:</p>
+        <img src="{{ studentmark.photo.url }}" alt="Student Photo" width="100">
+        {% endif %}
+
+        <button type="submit">Update</button>
+    </form>
+    <a href="{% url 'studentmarks' %}">Back to Student Marks</a>
+</body>
+</html>

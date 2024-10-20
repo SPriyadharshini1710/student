@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Marks</title>
+</head>
+<body>
+    <h2>All Student Marks</h2>
+    <a href="{% url 'add_studentmarks' %}">Add Student Marks</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Tamil</th>
+                <th>English</th>
+                <th>Maths</th>
+                <th>Science</th>
+                <th>Social Studies</th>
+                <th>Photo</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for studentmark in studentmarks %}
+            <tr>
+                <td>{{ studentmark.student.name }}</td>
+                <td>{{ studentmark.tamil }}</td>
+                <td>{{ studentmark.english }}</td>
+                <td>{{ studentmark.maths }}</td>
+                <td>{{ studentmark.science }}</td>
+                <td>{{ studentmark.social_studies }}</td>
+                <td>
+                    {% if studentmark.photo %}
+                    <img src="{{ studentmark.photo.url }}" alt="Student Photo" width="100">
+                    {% else %}
+                    No Photo
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'edit_studentmarks' studentmark.id %}">Edit</a>
+                    <form action="{% url 'delete_studentmarks' studentmark.id %}" method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
