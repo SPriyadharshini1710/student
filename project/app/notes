@@ -1,0 +1,164 @@
+{
+  "permissions": {
+
+    "CustomUser": {
+      "admin": {
+        "GET": true,
+        "POST": true,
+        "PUT": true,
+        "DELETE": false
+      },
+      "employee": {
+        "GET": true,
+        "POST": true,
+        "PUT": false,
+        "DELETE": false
+      }
+    },
+
+    
+    "Company": {  
+      "admin": {
+        "GET": true,
+        "POST": true,
+        "PUT": true,
+        "DELETE": false
+      },
+      "employee": {
+        "GET": true,
+        "POST": false,
+        "PUT": false,
+        "DELETE": false
+      }
+    }
+
+
+
+
+
+
+
+  }
+}
+
+
+
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):    
+    email=models.EmailField(null=True, blank=True,unique=True)
+    image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=10, unique=True)
+    # company = models.ForeignKey('Company', on_delete=models.CASCADE, null=True, blank=True)
+    pin = models.CharField(max_length=6, null=True, blank=True) 
+    is_active = models.BooleanField(default=True)
+    admin = models.BooleanField(default=False)
+    is_employee = models.BooleanField(default=False)
+    is_owner=models.BooleanField(default=False)
+    created_at =models.DateField(auto_now_add=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    created_at =models.DateField(auto_now_add=True)
+    proof=models.FileField(upload_to="proof/", null=True, blank=True)
+    USERNAME_FIELD = 'phone_number'
+    REQUIRED_FIELDS = ['name']
+    disable = models.BooleanField(default=False)
+    
+    objects = CustomUserManager()
+
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.lower()
+        # self.pin= 1111
+        super().save(*args, **kwargs)
+
+    
+
+    
+    def clean(self):
+        super().clean()
+        if self.email is None and self.phone_number is None:
+            raise ValidationError(_('Either Email or Phone Number must be set'))
+
+    def __str__(self):
+        return f"{self.name} - {self.phone_number}"
+    
+    # @property
+    # def employee(self):
+    #     if self.employee_set.all().last():
+    #         return self.employee_set.all().last()
+    #     return
+
+
+    # @property
+    # def company(self):
+    #     if self.admin:
+    #         if self.company_set.all().last():
+    #             return self.company_set.all().last()
+    #     if self.employee:
+    #         return self.employee.company
+    #     return
+    
+    @property
+    def getcompanies(self):
+        if self.owner:
+            if self.owner_company.all().last():
+                return self.owner_company.all()
+        return []
+    
+
+    @property
+    def owner(self):
+        if self.is_owner:
+            if self.ownerinfo_set.all().last():
+                return self.ownerinfo_set.all().last()
+        return 
+
+decorator.py
+
+
+from functools import wraps
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from .utils import get_user_company,get_company_id
+
+def check_user_company(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user = request.user  # Assuming `user` is available in the request
+        company, company_msg = get_user_company(user)
+        if not company:
+            return JsonResponse({"details": company_msg}, status=401)
+        request.company = company
+        request.company_id = get_company_id(company)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+
+def check_valid_user(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user = request.user  
+        if user.disable :
+            return JsonResponse({"details": "you are not allowed"}, status=401)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+def check_admin(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user = request.user  
+        print(user.admin)
+        if  not user.admin :
+            return redirect('login')
+            return JsonResponse({"details": "you are not allowed"}, status=401)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+
+
